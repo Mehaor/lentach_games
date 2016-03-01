@@ -3,10 +3,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="{% static '1.css' %}">
     <title></title>
+    <script src="{% static 'phaser.min.js' %}"></script>
 </head>
 <body>
 Hello
+
+{{ game_slug }}
+
+<div id="game_container"></div>
+<script src="{% static '_games/penguin/game.js' %}"></script>
 </body>
 </html>
