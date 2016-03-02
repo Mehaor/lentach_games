@@ -2,8 +2,6 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-from lentach_games import settings
-
 
 class Game(models.Model):
     name = models.CharField(max_length=100)
@@ -12,6 +10,7 @@ class Game(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     cover_image = models.ImageField(null=True, blank=True)
     is_published = models.BooleanField(default=False)
+    is_shutdown = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.slug
