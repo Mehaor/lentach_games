@@ -1,19 +1,17 @@
 # coding: utf-8
 from django.db.models import Q
-from rest_framework import viewsets
+from django.contrib.auth import authenticate, login, logout
 from main.models import User, Game, HiScore, SiteConfiguration
 from serializers import UserSerializer, GameSerializer
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from django.contrib.auth import authenticate, login, logout
-from lentach_games import settings
-
+from rest_framework import views, viewsets, response
 from rest_framework.authtoken.models import Token
+
+from lentach_games import settings
 
 
 class ResponseMixin(object):
     def get_response(self, status, data=None, message=None):
-        return Response({
+        return response.Response({
             "status": status,
             "data": data if data else None,
             "message": message if message else None,
@@ -28,7 +26,7 @@ class GameListsMixin(object):
                                    is_shutdown=is_shutdown).order_by('-created_at')
 
 
-class Index(APIView, ResponseMixin, GameListsMixin):
+class Index(views.APIView, ResponseMixin, GameListsMixin):
     def get(self, request, *args, **kwargs):
         config = SiteConfiguration.get_solo()
         game_list = self._get_game_list(exclude_game=config.current_game)
@@ -50,7 +48,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = 'username'
 
 
-class GetHiScoreTop(APIView, ResponseMixin):
+class GetHiScoreTop(views.APIView, ResponseMixin):
     def get(self, request, *args, **kwargs):
         try:
             game = Game.objects.get(slug=request.query_params.dict().get('game'))
@@ -73,7 +71,7 @@ class GetHiScoreTop(APIView, ResponseMixin):
         return self.get_response(True, data=hi_score_list)
 
 
-class SetHiScore(APIView, ResponseMixin):
+class SetHiScore(views.APIView, ResponseMixin):
     def post(self, request, *args, **kwargs):
         try:
             score = int(request.data.dict().get('score'))
@@ -98,7 +96,7 @@ class SetHiScore(APIView, ResponseMixin):
         return self.get_response(False, message='HiScore not updated')
 
 
-class CheckAuthentication(APIView, ResponseMixin):
+class CheckAuthentication(views.APIView, ResponseMixin):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated():
             user_data = UserSerializer(request.user).data
@@ -108,7 +106,7 @@ class CheckAuthentication(APIView, ResponseMixin):
             return self.get_response(False)
 
 
-class Login(APIView, ResponseMixin):
+class Login(views.APIView, ResponseMixin):
 
     def post(self, request, *args, **kwargs):
         try:
@@ -126,7 +124,7 @@ class Login(APIView, ResponseMixin):
             return self.get_response(False, message="Auth failed: {}".format(e))
 
 
-class Logout(APIView, ResponseMixin):
+class Logout(views.APIView, ResponseMixin):
     def get(self, request):
         return self._logout(request)
 
