@@ -1,5 +1,5 @@
 from models import User
-
+import requests
 
 class CustomSocialAuthBackend(object):
 
@@ -12,7 +12,6 @@ class CustomSocialAuthBackend(object):
             return user
         except User.DoesNotExist:
             return self._create_new_user(**user_data)
-
 
     def _get_user_data(self, token):
         raise NotImplementedError
@@ -32,5 +31,14 @@ class CustomSocialAuthBackend(object):
             return User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return None
+
+
+class VKAuthBackend(CustomSocialAuthBackend):
+    def _get_user_data(self, token):
+        response = requests.get('https://api.vk.com/method/users.get?access_token={}'.format(token))
+        if response.status_code == 200 and 'response' in response.json():
+            print response.json()
+            return str(response.json()['response'][0]['uid'])
+        return None
 
 

@@ -15,7 +15,7 @@ class User(AbstractUser):
 class Game(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=50, unique=True)
-    description = models.TextField(null=True)
+    description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     cover_image = models.ImageField(null=True, blank=True)
     is_published = models.BooleanField(default=False)
