@@ -9,27 +9,18 @@ import uuid
 class CustomAuthBackend(object):
     def authenticate(self, *args, **kwargs):
         user_data = self._get_user_data(*args, **kwargs)
-        if not user_data:
-            return None
-        try:
-            return self._update_old_user(**user_data)
-        except User.DoesNotExist:
-            return self._create_new_user(**user_data)
+        if user_data:
+            return self._create_or_update_user(**user_data)
+        return None
 
     def _get_user_data(self, *args, **kwargs):
         raise NotImplementedError
 
-    def _update_old_user(self, **user_data):
-        user = User.objects.get(username=user_data.get('username'))
-        avatar = user_data.get('avatar')
-        if avatar:
-            user.avatar = avatar
-        user.save()
-        return user
-
-    def _create_new_user(self, **user_data):
-        user = User.objects.create_user(**user_data)
-        user.set_unusable_password()
+    def _create_or_update_user(self, **user_data):
+        user = User.objects.get_or_create(username=user_data.get('username'))[0]
+        user.first_name = user_data.get('first_name')
+        user.last_name = user_data.get('last_name')
+        user.avatar = user_data.get('avatar')
         user.save()
         return user
 
