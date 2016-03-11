@@ -1,9 +1,8 @@
 # coding: utf-8
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
 from main.models import User, Game, HiScore
 from serializers import UserSerializer, GameSerializer
-from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
@@ -14,8 +13,8 @@ class ResponseMixin(object):
     def get_response(self, status, data=None, message=None):
         return Response({
             "status": status,
-            "data": data if data else "",
-            "message": message if message else "",
+            "data": data if data else None,
+            "message": message if message else None,
         })
 
 
@@ -33,14 +32,13 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
 class GetHiScores(APIView, ResponseMixin):
     def get(self, request, *args, **kwargs):
-        print request.data.dict()
+        print request.query_params.dict()
         try:
-            game = Game.objects.get(slug=request.data.dict().get('game'))
+            game = Game.objects.get(slug=request.query_params.dict().get('game'))
 
-            return self.get_response(True)
+            return self.get_response(True, message=game.name)
         except Game.DoesNotExist:
             return self.get_response(False, message="Game does not exist")
-
 
 
 class SetHiScore(APIView, ResponseMixin):
@@ -52,17 +50,19 @@ class SetHiScore(APIView, ResponseMixin):
             return self.get_response(False, 'Score value {} is incorrect'.format(request.data.dict().get('score')))
         except Game.DoesNotExist:
             return self.get_response(False, message='Game {} does not exist'.format(request.data.dict().get('game')))
-
+        score_data = {'is_hi_score': False}
         if game and score and request.user.is_authenticated():
             try:
                 hi_score = HiScore.objects.get(user=request.user, game=game)
-                if hi_score.value < score:
+                score_data['old_score'] = hi_score.value
+                if score > hi_score.value:
                     hi_score.value = score
+                    score_data['is_hi_score'] = True
                     hi_score.save()
             except HiScore.DoesNotExist:
                 hi_score = HiScore(user=request.user, game=game, value=int(score))
                 hi_score.save()
-            return self.get_response(True, message='HiScore updated')
+            return self.get_response(True, data=score_data, message='HiScore updated')
         return self.get_response(False, message='HiScore not updated')
 
 
