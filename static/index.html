@@ -1,10 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="userListApp">
 <head>
     <meta charset="UTF-8">
-    <title></title>
+    <title>Игры Лентача</title>
+    <link href="_basic/1.css">
+    <script src="_basic/angular.min.js"></script>
+    <script src="app/js/controllers.js"></script>
 </head>
-<body>
+<body ng-controller="userListCtrl">
+<ul>
+    <li ng-repeat="user in users">{{ user.view_name }}</li>
+</ul>
 
 </body>
 </html>
