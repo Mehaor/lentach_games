@@ -14,16 +14,10 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('view_name', 'avatar',)
         lookup_field = 'username'
-        extra_kwargs = {
-            'url': {'lookup_field': 'username'}
-        }
 
 
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
-        fields = ('slug', 'name', 'description', 'url', 'created_at')
-        lookup_field = 'slug'
-        extra_kwargs = {
-            'url': {'lookup_field': 'slug'}
-        }
+        fields = ('slug', 'name', 'description', 'created_at')
+

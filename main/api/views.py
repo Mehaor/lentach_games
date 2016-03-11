@@ -1,7 +1,7 @@
 # coding: utf-8
-
+from django.db.models import Q
 from rest_framework import viewsets
-from main.models import User, Game, HiScore
+from main.models import User, Game, HiScore, SiteConfiguration
 from serializers import UserSerializer, GameSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -18,6 +18,24 @@ class ResponseMixin(object):
             "data": data if data else None,
             "message": message if message else None,
         })
+
+
+class GameListsMixin(object):
+    def _get_game_list(self, exclude_game=None, is_published=True, is_shutdown=False):
+        pk = exclude_game.pk if exclude_game else None
+        return Game.objects.filter(~Q(pk=pk),
+                                   is_published=is_published,
+                                   is_shutdown=is_shutdown).order_by('-created_at')
+
+
+class Index(APIView, ResponseMixin, GameListsMixin):
+    def get(self, request, *args, **kwargs):
+        config = SiteConfiguration.get_solo()
+        game_list = self._get_game_list(exclude_game=config.current_game)
+        return self.get_response(
+            True,
+            data={'current_game': GameSerializer(config.current_game).data if config.current_game else None,
+                  'other_games': GameSerializer(game_list, many=True).data, })
 
 
 class GameViewSet(viewsets.ReadOnlyModelViewSet):

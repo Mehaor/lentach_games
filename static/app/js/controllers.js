@@ -4,13 +4,16 @@
 
 var queryPrefix = 'http://localhost:8000'
 
-var userListApp = angular.module('lentachGamesApp', [])
+var lentachGamesApp = angular.module('lentachGamesApp', [])
 
-userListApp.controller('userListCtrl', ['$scope', '$http', function($scope, $http) {
+lentachGamesApp.controller('userListCtrl', ['$scope', '$http', function($scope, $http) {
             $http.get(queryPrefix + '/api/users').then(function(response) {
                 $scope.users = response.data; }
             );
             }
-        ]);
+]);
+
+
+
 
 

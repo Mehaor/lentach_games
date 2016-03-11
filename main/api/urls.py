@@ -7,6 +7,7 @@ router.register('games', views.GameViewSet)
 router.register('users', views.UserViewSet)
 
 urlpatterns = [
+    url('^index/', views.Index.as_view()),
     url('^login/', views.Login.as_view()),
     url('^logout/', views.Logout.as_view()),
     url('^check_auth/', views.CheckAuthentication.as_view()),
