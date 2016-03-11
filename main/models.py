@@ -2,7 +2,7 @@
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from solo.models import SingletonModel
 
 class User(AbstractUser):
     avatar = models.URLField(null=True, blank=True)
@@ -25,7 +25,10 @@ class Game(models.Model):
 
 
 class HiScore(models.Model):
-    user = models.ForeignKey(User)
-    game = models.ForeignKey(Game)
+    user = models.ForeignKey('User')
+    game = models.ForeignKey('Game')
     value = models.IntegerField(default=0)
 
+
+class SiteConfiguration(SingletonModel):
+    current_game = models.ForeignKey('Game', blank=True, null=True)
