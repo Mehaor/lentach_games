@@ -9,7 +9,7 @@ def index(request):
 
 
 class Index(TemplateView):
-    template_name = 'index.html'
+    template_name = '_main.html'
 
     def get_context_data(self, **kwargs):
         context = super(Index, self).get_context_data(**kwargs)

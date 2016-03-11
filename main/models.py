@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+# coding: utf-8
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -6,7 +6,6 @@ from django.db import models
 
 class User(AbstractUser):
     avatar = models.URLField(null=True, blank=True)
-    social = models.CharField(max_length=20, null=True, blank=True)
 
     def __unicode__(self):
         return self.username
@@ -23,4 +22,10 @@ class Game(models.Model):
 
     def __unicode__(self):
         return self.slug
+
+
+class HiScore(models.Model):
+    user = models.ForeignKey(User)
+    game = models.ForeignKey(Game)
+    value = models.IntegerField(default=0)
 

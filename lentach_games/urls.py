@@ -3,7 +3,7 @@
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.9/topics/http/urls/
 Examples:
-Function views
+Function vie
     1. Add an import:  from my_app import views
     2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
 Class-based views
@@ -16,12 +16,12 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
-from main.api.urls import router
+from main.api.urls import urlpatterns as api_urlpatterns
 
 from main import views
 
 urlpatterns = [
     url(r'^$', views.Index.as_view()),
     url(r'^admin/', admin.site.urls),
-    url(r'api/', include(router.urls))
+    url(r'api/', include('main.api.urls'))
 ]
