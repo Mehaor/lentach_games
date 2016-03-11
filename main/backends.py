@@ -8,7 +8,9 @@ class CustomSocialAuthBackend(object):
         if not user_data:
             return None
         try:
-            user = User.objects.get(username=user_data.get('username'))
+            user = User.objects.get(username='{}{}'.format(user_data.get('social'), user_data.get('uid')))
+            user.avatar = user_data.get('avatar')
+            user.save()
             return user
         except User.DoesNotExist:
             return self._create_new_user(**user_data)
@@ -23,6 +25,7 @@ class CustomSocialAuthBackend(object):
         )
         user.set_unusable_password()
         user.social = user_data.get('social')
+        user.avatar = user_data.get('avatar')
         user.save()
         return user
 
@@ -35,10 +38,15 @@ class CustomSocialAuthBackend(object):
 
 class VKAuthBackend(CustomSocialAuthBackend):
     def _get_user_data(self, token):
-        response = requests.get('https://api.vk.com/method/users.get?access_token={}'.format(token))
+        response = requests.get('https://api.vk.com/method/users.get', params={'access_token': token})
         if response.status_code == 200 and 'response' in response.json():
-            print response.json()
-            return str(response.json()['response'][0]['uid'])
+            return {'uid': str(response.json()['response'][0]['uid']), 'social': 'vk'}
         return None
 
 
+class FacebookAuthBackend(CustomSocialAuthBackend):
+    def _get_user_data(self, token):
+        response = requests.get('https://www.googleapis.com/oauth2/v3/tokeninfo', params={'id_token': token})
+        if response.status_code == 200 and 'sub' in response.json():
+            return {'uid': str(response.json()['sub']), 'social': 'fb'}
+        return None
