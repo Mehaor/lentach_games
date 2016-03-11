@@ -12,9 +12,8 @@ from django.contrib.auth import authenticate, login, logout
 class ResponseMixin(object):
 
     def get_response(self, status, data=None, message=None):
-        status_repr = "true" if status or status != "false" else "false"
         return Response({
-            "status": status_repr,
+            "status": status,
             "data": data if data else "",
             "message": message if message else "",
         })
@@ -30,6 +29,18 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.filter(is_superuser=False, is_staff=False)
     serializer_class = UserSerializer
     lookup_field = 'username'
+
+
+class GetHiScores(APIView, ResponseMixin):
+    def get(self, request, *args, **kwargs):
+        print request.data.dict()
+        try:
+            game = Game.objects.get(slug=request.data.dict().get('game'))
+
+            return self.get_response(True)
+        except Game.DoesNotExist:
+            return self.get_response(False, message="Game does not exist")
+
 
 
 class SetHiScore(APIView, ResponseMixin):
@@ -53,6 +64,15 @@ class SetHiScore(APIView, ResponseMixin):
                 hi_score.save()
             return self.get_response(True, message='HiScore updated')
         return self.get_response(False, message='HiScore not updated')
+
+
+class CheckAuthentication(APIView, ResponseMixin):
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated():
+            user_data = UserSerializer(request.user).data
+            return self.get_response(True, data=user_data)
+        else:
+            return self.get_response(False)
 
 
 class Login(APIView, ResponseMixin):

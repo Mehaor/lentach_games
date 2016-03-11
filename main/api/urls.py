@@ -9,5 +9,9 @@ router.register('users', views.UserViewSet)
 urlpatterns = [
     url('^login/', views.Login.as_view()),
     url('^logout/', views.Logout.as_view()),
+    url('^check_auth/', views.CheckAuthentication.as_view()),
+
+    url('^hi_scores/', views.GetHiScores.as_view()),
+
     url(r'', include(router.urls)),
 ]
