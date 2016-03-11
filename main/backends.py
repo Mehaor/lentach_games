@@ -20,7 +20,7 @@ class CustomAuthBackend(object):
         raise NotImplementedError
 
     def _update_old_user(self, **user_data):
-        user = User.objects.get(username='{}'.format(user_data.get('username')))
+        user = User.objects.get(username=user_data.get('username'))
         avatar = user_data.get('avatar')
         if avatar:
             user.avatar = avatar
