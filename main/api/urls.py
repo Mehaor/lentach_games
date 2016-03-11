@@ -11,7 +11,7 @@ urlpatterns = [
     url('^logout/', views.Logout.as_view()),
     url('^check_auth/', views.CheckAuthentication.as_view()),
 
-    url('^hi_scores/', views.GetHiScores.as_view()),
+    url('^hi_scores/', views.GetHiScoreTop.as_view()),
 
     url(r'', include(router.urls)),
 ]

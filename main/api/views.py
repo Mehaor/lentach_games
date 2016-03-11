@@ -6,7 +6,7 @@ from serializers import UserSerializer, GameSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
-
+from lentach_games import settings
 
 class ResponseMixin(object):
 
@@ -30,15 +30,28 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = 'username'
 
 
-class GetHiScores(APIView, ResponseMixin):
+class GetHiScoreTop(APIView, ResponseMixin):
     def get(self, request, *args, **kwargs):
-        print request.query_params.dict()
         try:
             game = Game.objects.get(slug=request.query_params.dict().get('game'))
+            number_of_gamers = int(request.query_params.dict().get('number'))
 
-            return self.get_response(True, message=game.name)
         except Game.DoesNotExist:
             return self.get_response(False, message="Game does not exist")
+        except (ValueError, TypeError):
+            return self.get_response(False, message="Number is incorrect")
+        if number_of_gamers <= 0:
+            number_of_gamers = settings.DEFAULT_HI_SCORE_TOP_SIZE
+        hi_score_list = []
+        num = 1
+        for hi_score in HiScore.objects.filter(game=game).order_by('-value')[0: number_of_gamers]:
+            hi_score_list.append({'number': num,
+                                  'user': UserSerializer(request.user).data,
+                                  'value': hi_score.value,
+                                  'is_self': True if hi_score.user == request.user else False,
+                                  })
+            num += 1
+        return self.get_response(True, data=hi_score_list)
 
 
 class SetHiScore(APIView, ResponseMixin):
@@ -46,10 +59,10 @@ class SetHiScore(APIView, ResponseMixin):
         try:
             score = int(request.data.dict().get('score'))
             game = Game.objects.get(slug=request.data.dict().get('game'))
-        except ValueError:
-            return self.get_response(False, 'Score value {} is incorrect'.format(request.data.dict().get('score')))
         except Game.DoesNotExist:
             return self.get_response(False, message='Game {} does not exist'.format(request.data.dict().get('game')))
+        except (ValueError, TypeError):
+            return self.get_response(False, 'Score value {} is incorrect'.format(request.data.dict().get('score')))
         score_data = {'is_hi_score': False}
         if game and score and request.user.is_authenticated():
             try:

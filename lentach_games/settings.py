@@ -125,6 +125,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
+DEFAULT_HI_SCORE_TOP_SIZE = 10
+
 DEFAULT_USER_FIRST_NAME = u'Анон'
 DEFAULT_USER_LAST_NAME = u'Анонов'
 
