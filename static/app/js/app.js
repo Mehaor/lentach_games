@@ -10,12 +10,11 @@ var lentachGamesApp = angular.module('lentachGamesApp', [
 lentachGamesApp.config(['$routeProvider',
         function($routeProvider) {
             $routeProvider.when('/', {
-                redirectT: 'http://www.ya.ru',
-                'templateUrl': '',
-                'controller': 'userListCtrl',
-            }).when('/hello', {
-                redirectT: 'http://www.ya.ru'
+                templateUrl: 'templates/home.html',
+                controller: 'indexCtrl',
+            }).when('/users', {
+                templateUrl: 'templates/user_list.html',
+                controller: 'userListCtrl',
             })
         }
-
 ]);
