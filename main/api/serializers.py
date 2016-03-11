@@ -27,6 +27,3 @@ class GameSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'url': {'lookup_field': 'slug'}
         }
-
-
-

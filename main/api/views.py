@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from lentach_games import settings
 
+from rest_framework.authtoken.models import Token
+
 
 class ResponseMixin(object):
     def get_response(self, status, data=None, message=None):
@@ -82,6 +84,7 @@ class CheckAuthentication(APIView, ResponseMixin):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated():
             user_data = UserSerializer(request.user).data
+            user_data.update(token=Token.objects.get_or_create(user=request.user)[0].key)
             return self.get_response(True, data=user_data)
         else:
             return self.get_response(False)
@@ -95,6 +98,9 @@ class Login(APIView, ResponseMixin):
             if user:
                 login(request, user)
                 user_data = UserSerializer(user).data
+                user_data.update(token=Token.objects.get_or_create(user=user)[0].key)
+                if getattr(user, '_created', False):
+                    user_data.update(created=True)
                 return self.get_response(True, data=user_data, message="Login successful")
             return self.get_response(False, message="Auth failed: No such user or auth backend")
 

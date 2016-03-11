@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -125,8 +126,21 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-DEFAULT_HI_SCORE_TOP_SIZE = 10
+REST_FRAMEWORK = {
+    'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    #'DEFAULT_PERMISSION_CLASSES': (
+    #    'rest_framework.permissions.IsAuthenticated',
+    #),
+}
 
+
+
+DEFAULT_HI_SCORE_TOP_SIZE = 10
 DEFAULT_USER_FIRST_NAME = u'Анон'
 DEFAULT_USER_LAST_NAME = u'Анонов'
 
