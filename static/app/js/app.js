@@ -11,10 +11,16 @@ lentachGamesApp.config(['$routeProvider',
         function($routeProvider) {
             $routeProvider.when('/', {
                 templateUrl: 'templates/home.html',
-                controller: 'indexCtrl',
+                controller: 'indexCtrl'
             }).when('/users', {
                 templateUrl: 'templates/user_list.html',
-                controller: 'userListCtrl',
-            })
+                controller: 'userListCtrl'
+            }).when('/login', {
+                templateUrl: 'templates/login.html',
+                controller: 'loginCtrl'
+            }).otherwise({
+                redirectTo: '/'
+            });
+
         }
 ]);

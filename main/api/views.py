@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
 from main.models import User, Game, HiScore, SiteConfiguration
 from serializers import UserSerializer, GameSerializer
-from rest_framework import views, viewsets, response
+from rest_framework import views, viewsets, response, permissions
 from rest_framework.authtoken.models import Token
 
 from lentach_games import settings
@@ -107,6 +107,7 @@ class CheckAuthentication(views.APIView, ResponseMixin):
 
 
 class Login(views.APIView, ResponseMixin):
+    permission_classes = (permissions.AllowAny, )
 
     def post(self, request, *args, **kwargs):
         try:

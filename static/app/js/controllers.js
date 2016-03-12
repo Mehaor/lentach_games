@@ -8,9 +8,13 @@ var lentachGamesControllers = angular.module('lentachGamesControllers', []);
 
 
 lentachGamesControllers.controller('indexCtrl', ['$scope', '$http', function($scope, $http) {
-    $http.get(queryPrefix + '/api/check_auth').then(function(response) {
+    $http.post(queryPrefix + '/api/login/').then(function(response) {
         console.log(response.data);
     });
+}]);
+
+lentachGamesControllers.controller('loginCtrl', ['$scope', '$http', function($scope, $http) {
+    $scope.msg = 'HELLO';
 }]);
 
 lentachGamesControllers.controller('userListCtrl', ['$scope', '$http', function($scope, $http) {

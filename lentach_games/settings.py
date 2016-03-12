@@ -138,12 +138,12 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
-    #'DEFAULT_PERMISSION_CLASSES': (
-    #    'rest_framework.permissions.IsAuthenticated',
-    #),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
 
-
+CORS_ORIGIN_ALLOW_ALL = True
 
 DEFAULT_HI_SCORE_TOP_SIZE = 10
 DEFAULT_USER_FIRST_NAME = u'Анон'
