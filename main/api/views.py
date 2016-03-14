@@ -74,8 +74,9 @@ class SetHiScore(views.APIView, ResponseMixin):
             return self.get_response(False, message='Game {} does not exist'.format(request.data.dict().get('game')))
         except (ValueError, TypeError):
             return self.get_response(False, 'Score value {} is incorrect'.format(request.data.dict().get('score')))
-        hi_score = HiScore.objects.get_or_create(user=request.user, game=game)[0]
-        score_data = {'new_score': score, 'old_score': hi_score.value, 'is_hi_score': score > hi_score.value}
+        hi_score, is_created = HiScore.objects.get_or_create(user=request.user, game=game)
+        score_data = {'new_score': score, 'old_score': hi_score.value,
+                      'is_hi_score': score > hi_score.value, 'is_created': is_created}
         hi_score.value = score if score > hi_score.value else hi_score.value
         hi_score.save()
         return self.get_response(True, data=score_data)
