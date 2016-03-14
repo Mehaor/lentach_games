@@ -52,18 +52,12 @@ class GetHiScoreTop(views.APIView, ResponseMixin):
     def get(self, request, *args, **kwargs):
         try:
             game = Game.objects.get(slug=request.query_params.dict().get('game'))
-            number_of_gamers = int(request.query_params.dict().get('number'))
-
         except Game.DoesNotExist:
             return self.get_response(False, message="Game does not exist")
-        except (ValueError, TypeError):
-            return self.get_response(False, message="Number is incorrect")
-        if number_of_gamers <= 0:
-            number_of_gamers = settings.DEFAULT_HI_SCORE_TOP_SIZE
+        number_of_gamers = settings.DEFAULT_HI_SCORE_TOP_SIZE
         hi_score_list = []
         num = 1
         for hi_score in HiScore.objects.filter(game=game,
-                                               user__is_superuser=False,
                                                user__is_staff=False).order_by('-value')[0: number_of_gamers]:
             hi_score_list.append({'number': num, 'user': UserSerializer(hi_score.user).data,
                                   'value': hi_score.value, 'is_self': hi_score.user == request.user })
@@ -80,20 +74,11 @@ class SetHiScore(views.APIView, ResponseMixin):
             return self.get_response(False, message='Game {} does not exist'.format(request.data.dict().get('game')))
         except (ValueError, TypeError):
             return self.get_response(False, 'Score value {} is incorrect'.format(request.data.dict().get('score')))
-        score_data = {'is_hi_score': False, 'new_score': score, 'old_score': None}
-        if game and score and request.user.is_authenticated():
-            try:
-                hi_score = HiScore.objects.get(user=request.user, game=game)
-                score_data['old_score'] = hi_score.value
-                if score > hi_score.value:
-                    hi_score.value = score
-                    score_data['is_hi_score'] = True
-                    hi_score.save()
-            except HiScore.DoesNotExist:
-                hi_score = HiScore(user=request.user, game=game, value=score)
-                hi_score.save()
-            return self.get_response(True, data=score_data, message='HiScore updated')
-        return self.get_response(False, message='HiScore not updated')
+        hi_score = HiScore.objects.get_or_create(user=request.user, game=game)[0]
+        score_data = {'new_score': score, 'old_score': hi_score.value, 'is_hi_score': score > hi_score.value}
+        hi_score.value = score if score > hi_score.value else hi_score.value
+        hi_score.save()
+        return self.get_response(True, data=score_data)
 
 
 class CheckAuthentication(views.APIView, ResponseMixin):
