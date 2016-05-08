@@ -162,13 +162,19 @@ MyGame.finishState.prototype = {
         if (this.game.globalScore <=3) this.add.sprite(0, 0, 'over1');
         if (this.game.globalScore > 3 && this.game.globalScore < 9) this.add.sprite(0, 0, 'over2');
         if (this.game.globalScore >= 9) this.add.sprite(0, 0, 'over3');
-
+        var style = { font: "80px Arial", fill: "#fff"};
+        this.scoreText = this.add.text(this.game.width/2, 60, this.game.globalScore + ' / 10', style);
+        this.scoreText.anchor.x = 0.5;
         this.timer = this.time.create(false);
-        this.timer.loop(500, function() {
+        this.timer.loop(1000, function() {
             this.stateTimer++;
-            if (this.stateTimer >= 1) this.state.start('main');
+            if (this.stateTimer >= 3) this.canReplay = true;
         }, this);
         this.timer.start();
+
+        this.input.onDown.add(function() {
+            if (this.canReplay) this.state.start('main');
+        }, this);
     }
 
 };
