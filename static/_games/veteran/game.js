@@ -129,7 +129,6 @@ MyGame.mainState.prototype = {
         }
         this.answered = false;
         this.currentQuestion = this.test.questions[this.questionNumber - 1];
-        //console.log(this.currentQuestion);
         this.bgs.create(0, -40, 'bg' + this.questionNumber);
         this.questionText.text = this.currentQuestion.question;
         this.noteText.text = '';
