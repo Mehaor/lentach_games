@@ -6,10 +6,7 @@ var MyGame = {};
 
 MyGame.bootState = function(t) {},
 MyGame.bootState.prototype = {
-    preload: function() {
-        this.load.image('bg', assetsDir + '/sprites/bg.png'),
-        this.load.spritesheet('head', assetsDir + '/sprites/heads.png', 100, 200)
-    },
+    preload: function() {},
     create: function() {
         this.game.scale.maxWidth = window.innerHeight * 1.5;
         this.game.scale.maxHeight = window.innerHeight;
@@ -24,7 +21,18 @@ MyGame.preloadState = function(t) {},
 MyGame.preloadState.prototype = {
     init: function() { },
     preload: function() {
+        this.text = this.add.text(this.game.width/2, this.game.height/2, 'загрузка', {fill: '#ffffff'});
+        this.text.anchor.set(0.5, 0.5);
+        this.load.onFileComplete.add(this.fileComplete, this);
 
+        this.load.image('title', assetsDir + '/sprites/title.png'),
+        this.load.image('bgTotals', assetsDir + '/sprites/totals_wb.png'),
+        this.load.image('buttonRestart', assetsDir + '/sprites/restart_button.png'),
+        this.load.image('bg', assetsDir + '/sprites/bg.png'),
+        this.load.spritesheet('head', assetsDir + '/sprites/heads_hole.png', 204, 180),
+        this.load.audio('sound_fanfare', assetsDir + '/audio/fanfare.mp3'),
+        this.load.audio('sound_smash', assetsDir + '/audio/strike.mp3'),
+        this.load.audio('sound_error', assetsDir + '/audio/error.mp3')
     },
 
     create: function() { this.state.start('title'); },
@@ -39,6 +47,7 @@ MyGame.titleScreenState.prototype = {
         this.game.currentLevel = -1;
     },
     create: function() {
+        this.add.sprite(0, 0, 'title');
         this.input.onDown.add(this.onDown, this);
     },
     onDown: function(pointer) { this.state.start('main');  }
@@ -49,11 +58,11 @@ MyGame.mainState.prototype = {
     init: function() {
         this.score = 0;
         this.gameTimer = 0;
-        this.inactiveDelay = 10;
-        this.nextHeadDelay = 20;
+        this.inactiveDelay = 30;
+        this.nextHeadDelay = 10;
         this.headStayDelay = 20;
         this.isActive = true;
-        this.lives = 3;
+        this.lives = 1;
         this.holes = [0, 0, 0, 0, 0, 0];
     },
 
@@ -63,6 +72,8 @@ MyGame.mainState.prototype = {
         this.timer = this.time.create(false);
         this.timer.loop(100, this.timerLoop, this);
         this.timer.start();
+        this.soundSmash = this.add.audio("sound_smash");
+        this.soundError = this.add.audio("sound_error");
     },
 
     timerLoop: function() {
@@ -76,7 +87,10 @@ MyGame.mainState.prototype = {
                     this.heads.removeAll();
                     this.nextHeadDelay += 5;
                     this.headStayDelay += 5;
-                } else this.state.start('finish');
+                } else {
+                    this.game.globalScore = this.score;
+                    this.state.start('finish');
+                }
             }
         }
         else {
@@ -98,9 +112,14 @@ MyGame.mainState.prototype = {
         if (emptyHoleIndexes.length == 0) return;
         var holeInd = emptyHoleIndexes[Math.floor(Math.random() * emptyHoleIndexes.length)];
         this.holes[holeInd] = 1;
-        var head = this.heads.create(200 + 250 * (holeInd % 3), 100 + 200 * Math.floor( holeInd / 3), 'head');
-        head.animations.add('appear', [2, 1, 0], 5, false);
-        head.animations.add('disappear', [0, 1, 2], 5, false);
+        var spriteRow = Math.floor(Math.random() * 8);
+        var head = this.heads.create(95 + 250 * (holeInd % 3),
+                                    120 + 150 * Math.floor( holeInd / 3), 'head');
+
+        head.animations.add('appear', [4 * spriteRow, 1 + 4 * spriteRow, 2 + 4 * spriteRow], 10, false);
+        head.animations.add('disappear', [2 + 4 * spriteRow, 1 + 4 * spriteRow, 4 * spriteRow], 10, false);
+        head.animations.add('clicked', [3 + 4 * spriteRow, 3 + 4 * spriteRow, 3 + 4 * spriteRow,
+            3 + 4 * spriteRow, 1 + 4 * spriteRow, 4 * spriteRow], 10, false);
         head.animations.play('appear');
         head.isClicked = false;
         head.isRemoving = false;
@@ -112,26 +131,29 @@ MyGame.mainState.prototype = {
 
     headClick: function(head) {
         if (head.isClicked || !this.isActive) return;
+        this.soundSmash.play();
         this.score++;
         head.isClicked = true;
         if (this.score % 5 == 0) {
             this.headStayDelay--;
             this.nextHeadDelay--;
             if (this.headStayDelay < 5) this.headStayDelay = 5;
-            if (this.nextHeadDelay < 5) this.nextHeadDelay = 5;
+            if (this.nextHeadDelay < 1) this.nextHeadDelay = 1;
         }
 
         this.removeHead(head);
     },
 
     removeHead: function(head) {
-        head.animations.play('disappear');
+        if (head.isClicked) head.animations.play('clicked');
+        else head.animations.play('disappear');
         head.isRemoving = true;
         head.animations.currentAnim.onComplete.add(function (head) {
             if (!head.isClicked) {
                 this.isActive = false;
                 this.gameTimer = 0;
                 this.lives--;
+                this.soundError.play();
             } else { this.holes[head.holeIndex] = 0; }
             head.kill();
         }, this);
@@ -151,12 +173,35 @@ MyGame.finishState.prototype = {
 
     },
 
-    create: function() { },
+    create: function() {
+        this.add.sprite(0, 0, 'bgTotals');
+        this.finishText = this.add.text(this.game.width/2, 250, this.game.globalScore,
+            {font: "60px Arial", fill: "#fff", align: "center"});
+        this.finishText.anchor.x = 0.5;
+
+        this.replayButton = this.add.sprite(this.game.width/2, 400, 'buttonRestart');
+        this.replayButton.visible = false;
+        this.replayButton.anchor.x = 0.5;
+
+        this.input.onDown.add(this.onDown, this);
+
+        this.timer = this.time.create(false);
+        this.timer.loop(1000, function() {
+            this.stateTimer++;
+            if (this.stateTimer > 1) this.replayButton.visible = true;
+
+            if (this.stateTimer > 2) this.canReplay = true;
+        }, this);
+        this.timer.start();
+
+        this.soundFanfare = this.add.audio("sound_fanfare");
+        this.soundFanfare.play();
+    },
 
     onDown: function(pointer) {
         if (this.canReplay) this.state.start('main');
         else {
-            this.replayText.visible = true;
+            this.replayButton.visible = true;
             this.canReplay = true;
         }
     }
